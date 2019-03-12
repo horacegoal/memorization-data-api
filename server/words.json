@@ -1,0 +1,30 @@
+{
+  "國家": {
+    "美國": true,
+    "法國": true,
+    "德國": true,
+    "中國": true,
+    "日本": true,
+    "英國": true,
+    "香港": true,
+    "泰國": true,
+    "秦國": true,
+    "趙國": true
+  },
+  "水果": {
+    "西瓜": true,
+    "橙": true,
+    "蘋果": true
+  },
+  "動物": {
+    "狗": true,
+    "貓": true,
+    "豬": true,
+    "牛": true,
+    "雞": true,
+    "羊": true,
+    "魚": true,
+    "馬": true,
+    "龍": true
+  }
+}
