@@ -58,14 +58,14 @@ app.get('/all', (request, response) => {
     })
     setTimeout(() => {
       response.send(allData)
-    }, 1000)
+    }, 2000)
   })
 
 })
 
 
 app.post('/add', (request, response) => {
-  let category = request.body.category;
+  let category = request.body.category.toLowerCase();
   let name = request.body.name;
 
   let existed = false;
