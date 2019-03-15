@@ -67,13 +67,6 @@ app.get('/all', (request, response) => {
 app.post('/add', (request, response) => {
   let category = request.body.category;
   let name = request.body.name;
-  if(data[category]){
-    data[category][name] = true
-  }else{
-    data[category] = {
-      [name]: true
-    }
-  }
 
   let existed = false;
   let collections = db.listCollections();
