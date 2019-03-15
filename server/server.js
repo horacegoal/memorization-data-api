@@ -3,8 +3,22 @@ const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser')
 const cors = require('cors');
-let words = fs.readFileSync('./server/words.json');
-let data = JSON.parse(words);
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+let db;
+
+const connectionURL = process.env.MONGODBATLAS_URI;
+const databaseName = 'Words';
+
+MongoClient.connect(connectionURL, {useNewUrlParser: true}, (err, client) => {
+  if(err){
+    return console.log('unable to connect to database')
+  }
+  console.log('database connected')
+  db = client.db(databaseName)
+
+})
+
 
 
 const app = express();
@@ -19,8 +33,36 @@ app.listen(port, () => {
 })
 
 app.get('/all', (request, response) => {
-  response.send(data);
+  let list = db.listCollections().toArray();
+  // let allData = {a: 1};
+  let collectionList = []
+  list
+  .then((res) => {
+    res.forEach((collection) => {
+      collectionList.push(collection.name)
+    })
+    return new Promise((resolve, reject) => {
+      if(collectionList.length === res.length){
+        resolve(collectionList)
+      }
+    })
+  })
+  .then((collectionList) => {
+    let allData = {};
+    collectionList.forEach((collectionName) => {
+      let cursor = db.collection(collectionName).find({},{projection:{ _id: 0}});
+      let doc = cursor.toArray();
+      doc.then((res) => {
+        allData[collectionName] = res;
+      })
+    })
+    setTimeout(() => {
+      response.send(allData)
+    }, 1000)
+  })
+
 })
+
 
 app.post('/add', (request, response) => {
   let category = request.body.category;
@@ -33,15 +75,34 @@ app.post('/add', (request, response) => {
     }
   }
 
-  fs.writeFile('words.json', JSON.stringify(data, null, 2), (err) => {
-    if(err){
-      console.log(err)
-    }else{
-      console.log(category, name, 'added');
-      response.send({
-        category: category,
-        name: name
+  let existed = false;
+  let collections = db.listCollections();
+    collections.toArray((err, res) => {
+      if(err){
+        return console.log(err)
+      }
+      res.forEach((collection) => {
+        if(collection.name === category){
+
+          existed = true;
+          db.collection(category).updateOne({}, {$set: {[name]: category}})
+          response.send(category, name, 'added');
+
+        }
+
       })
-    }
-  })
+      if(!existed){
+        db.collection(category).insertOne({
+          [name]: category
+        }, (err, res) => {
+          if(err) {
+            return console.log('unable to insert data');
+          }
+          console.log(res.ops)
+          response.send(category, name, 'added');
+        })
+      }
+    })
+
+
 })
